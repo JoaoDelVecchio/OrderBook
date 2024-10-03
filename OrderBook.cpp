@@ -12,8 +12,8 @@
 #include <string.h>
 #include <locale.h>
 
-// aqui criar dois objetos. o primeiro ser� o objeto limit e o segundo o objeto market
-// ambos os objetos v�o possuir uma classe anterior que vai ser, sei la
+// aqui criar dois objetos. o primeiro serao objeto limit e o segundo o objeto market
+// ambos os objetos vao possuir uma classe anterior que vai ser, sei la
 
 class Order
 {
@@ -229,14 +229,12 @@ void Trade(std::vector<Order> &buyBook, std::vector<Order> &sellBook)
 
 void MarketBuy(Order *ptr, std::vector<Order> &sellBook)
 {
-    bool END;
     float quant;
 
     std::cout << "Entrei na funcao de MarketBuy \n";
 
     quant = 0;   // quantidade que esta sendo trading no pre�o do topo do livro de vendas
-    END = FALSE; // verifica se todos os caras com mesmo pre�o poss�vel j� foram transacionados
-    while (!END)
+    while (ptr->qty != 0 && sellBook.size() != 0)
     {
         std::cout << "sellBook[0].price: " << sellBook[0].price << " sellBook[0].qty: " << sellBook[0].qty << "\n";
         std::cout << "Ordens de compra a mercado: " << ptr->qty << "\n";
@@ -252,12 +250,10 @@ void MarketBuy(Order *ptr, std::vector<Order> &sellBook)
             {
                 std::cout << "Estou no caso que nao tem mais outro cara no livro de vendas com o mesmo preco que o que eu acabei de esgotar.\n";
 
-                END = TRUE;
-
                 std::cout << "\n--------------------------------------------- \n";
                 std::cout << "Trade, price: " << sellBook[0].price << ", qty: " << quant << "\n";
                 std::cout << "\n--------------------------------------------- \n";
-
+                quant = 0;
                 sellBook.erase(sellBook.begin());
 
                 std::cout << "Dei Erase no meu sellBook. \n";
@@ -280,9 +276,9 @@ void MarketBuy(Order *ptr, std::vector<Order> &sellBook)
             std::cout << "\n--------------------------------------------- \n";
             std::cout << "Trade, price: " << sellBook[0].price << ", qty: " << quant << "\n";
             std::cout << "\n--------------------------------------------- \n";
-
+            quant = 0;
             free(ptr);
-            END = TRUE;
+
         }
         else if (ptr->qty == sellBook[0].qty)
         {
@@ -297,21 +293,19 @@ void MarketBuy(Order *ptr, std::vector<Order> &sellBook)
             sellBook.erase(sellBook.begin());
             std::cout << "Dei Erase no meu sellBook. meu novo maior valor eh: " << " sellBook[0].price: " << sellBook[0].price << " sellBook[0].qty: " << sellBook[0].qty << "\n";
             free(ptr);
-            END = TRUE;
+
         }
     }
 }
 
 void MarketSell(Order *ptr, std::vector<Order> &buyBook)
 {
-    bool END;
     float quant;
 
     std::cout << "Entrei na funcao de MarketSell \n";
 
     quant = 0;   // quantidade que esta sendo trading no pre�o do topo do livro de vendas
-    END = FALSE; // verifica se todos os caras com mesmo pre�o poss�vel j� foram transacionados
-    while (!END)
+    while (ptr->qty != 0 && buyBook.size() != 0)
     {
         std::cout << "buyBook[0].price: " << buyBook[0].price << " buyBook[0].qty: " << buyBook[0].qty << "\n";
         std::cout << "Ordens de venda a mercado: " << ptr->qty << "\n";
@@ -327,12 +321,10 @@ void MarketSell(Order *ptr, std::vector<Order> &buyBook)
             {
                 std::cout << "Estou no caso que nao tem mais outro cara no livro de compras com o mesmo pre�o que o que eu acabei de esgotar.\n";
 
-                END = TRUE;
-
                 std::cout << "\n--------------------------------------------- \n";
                 std::cout << "Trade, price: " << buyBook[0].price << ", qty: " << quant << "\n";
                 std::cout << "\n--------------------------------------------- \n";
-
+                quant = 0;
                 buyBook.erase(buyBook.begin());
 
                 std::cout << "Dei Erase no meu buyBook. \n";
@@ -348,22 +340,21 @@ void MarketSell(Order *ptr, std::vector<Order> &buyBook)
         {
             std::cout << "Estou no caso que temos mais quantidade de compra do que venda a mercado nas ofertas do topo\n";
 
-            quant = ptr->qty;
+            quant += ptr->qty;
             buyBook[0].qty -= ptr->qty;
 
             std::cout << "quant: " << quant << " buyBook[0].qty " << buyBook[0].qty << "\n";
             std::cout << "\n--------------------------------------------- \n";
             std::cout << "Trade, price: " << buyBook[0].price << ", qty: " << quant << "\n";
             std::cout << "\n--------------------------------------------- \n";
-
+            quant = 0
             free(ptr);
-            END = TRUE;
         }
         else if (ptr->qty == buyBook[0].qty)
         {
             std::cout << "Ordem do topo do livro de vendar igual a ordem de compra a mercado \n";
 
-            quant = ptr->qty;
+            quant += ptr->qty;
 
             std::cout << "\n--------------------------------------------- \n";
             std::cout << "Trade, price: " << buyBook[0].price << ", qty: " << quant << "\n";
@@ -372,7 +363,6 @@ void MarketSell(Order *ptr, std::vector<Order> &buyBook)
             buyBook.erase(buyBook.begin());
             std::cout << "Dei Erase no meu buyBook. meu novo maior valor eh: " << " buyBook[0].price: " << buyBook[0].price << " buyBook[0].qty: " << buyBook[0].qty << "\n";
             free(ptr);
-            END = TRUE;
         }
     }
 }
