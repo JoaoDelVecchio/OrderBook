@@ -233,7 +233,7 @@ void MarketBuy(Order *ptr, std::vector<Order> &sellBook)
 
     std::cout << "Entrei na funcao de MarketBuy \n";
 
-    quant = 0;   // quantidade que esta sendo trading no pre�o do topo do livro de vendas
+    quant = 0; // quantidade que esta sendo trading no pre�o do topo do livro de vendas
     while (ptr->qty != 0 && sellBook.size() != 0)
     {
         std::cout << "sellBook[0].price: " << sellBook[0].price << " sellBook[0].qty: " << sellBook[0].qty << "\n";
@@ -278,7 +278,6 @@ void MarketBuy(Order *ptr, std::vector<Order> &sellBook)
             std::cout << "\n--------------------------------------------- \n";
             quant = 0;
             free(ptr);
-
         }
         else if (ptr->qty == sellBook[0].qty)
         {
@@ -293,7 +292,6 @@ void MarketBuy(Order *ptr, std::vector<Order> &sellBook)
             sellBook.erase(sellBook.begin());
             std::cout << "Dei Erase no meu sellBook. meu novo maior valor eh: " << " sellBook[0].price: " << sellBook[0].price << " sellBook[0].qty: " << sellBook[0].qty << "\n";
             free(ptr);
-
         }
     }
 }
@@ -304,7 +302,7 @@ void MarketSell(Order *ptr, std::vector<Order> &buyBook)
 
     std::cout << "Entrei na funcao de MarketSell \n";
 
-    quant = 0;   // quantidade que esta sendo trading no pre�o do topo do livro de vendas
+    quant = 0; // quantidade que esta sendo trading no pre�o do topo do livro de vendas
     while (ptr->qty != 0 && buyBook.size() != 0)
     {
         std::cout << "buyBook[0].price: " << buyBook[0].price << " buyBook[0].qty: " << buyBook[0].qty << "\n";
@@ -347,7 +345,7 @@ void MarketSell(Order *ptr, std::vector<Order> &buyBook)
             std::cout << "\n--------------------------------------------- \n";
             std::cout << "Trade, price: " << buyBook[0].price << ", qty: " << quant << "\n";
             std::cout << "\n--------------------------------------------- \n";
-            quant = 0
+            quant = 0; 
             free(ptr);
         }
         else if (ptr->qty == buyBook[0].qty)

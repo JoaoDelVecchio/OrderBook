@@ -2,7 +2,7 @@
 
 
 tarefas a fazer:
-* Corrigir o erro de market nao comprando duas acoes com precos diferentes em sequencia
+
 * Implementar funcao para visualizacao do livro
 * Implementar cancelamento:
                 limit buy 10 100
