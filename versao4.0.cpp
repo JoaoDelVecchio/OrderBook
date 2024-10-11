@@ -294,7 +294,7 @@ bool CancelOrder(float identificador, std::vector<Order> &sellBook, std::vector<
     return REMOVEU;
 }
 
-void ChangeOrder(float id, std::vector<Order> &sellBook, std::vector<Order> &buyBook, std::string& sideNew, float price, float qty)
+void ChangeOrder(float& id, std::vector<Order> &sellBook, std::vector<Order> &buyBook, std::string& sideNew, float price, float qty)
 {
     bool isPegg = FALSE;
     Order *ptr;
@@ -351,22 +351,12 @@ int main()
     identificador = 1;
     std::cout << "Para encerrar o programa a qualquer momento, digite: exit \n\n";
     std::cout << "Para visualizar o livro de ordens a qualquer momento, digite: print book \n\n";
-    std::cout << "Digite help para visualizar possiveis comandos e certas diretrizes do programa. \n\n";
+    std::cout << "Para alterar algum valor, digite: change identificador new_Price new_Quantity \n\n";
     std::cout << "Matching Engine - Digite algum comando ou as entradas de compra e venda: \n\n";
 
     std::cin >> type; // Acabei de ler a primeira entrada
     while (type != "exit")
     {
-        if (type == "help")
-        {
-            std::cout << "\n  1. Para encerrar o programa a qualquer momento, digite: exit \n\n";
-            std::cout << "  2. Para visualizar o livro de ordens a qualquer momento, digite: print book \n\n";
-            std::cout << "  3. Para alterar alguma ordem, digite: change Identificador new_Price new_Quantity \n\n";
-            std::cout << "  4. Para cancelar alguma ordem, digite: calcel Identificador \n\n";
-            std::cout << "  4. Para cancelar criar uma ordem pegged, digite 'peg bid buy Quantity' ou 'peg offer sell Quantity' \n\n";
-            std::cout << "  5. Este programa funciona de tal forma que sempre que ha uma ordem limit de venda com preco menor que uma ordem limit de compra ocorre um trade. \n\n";
-            std::cout << "  6. Este programa funciona de tal forma que a maior oferta de compra ou a menor oferta de venda sao sempre os valores bid e offer e serem seguidos \n\n";
-        }
         if (type == "print") // print book
         {
             std::cin >> side;
@@ -396,6 +386,7 @@ int main()
             {
                 AddToBuyBook(ptr, buyBook);
                 std::cout << "Order Created: buy "<< ptr->qty<< " @ "<< ptr->price<< "  identificador: "<< ptr->id<< "\n";
+
             }
             else
             {
@@ -403,7 +394,9 @@ int main()
                 std::cout << "Order Created: sell "<< ptr->qty<< " @ "<< ptr->price<< "  identificador: "<< ptr->id<< "\n";
             }
 
-            // Atualizar os livros para ver se eh possivel realizar alguma venda
+
+
+            // Atualizar os livros para ver se � poss�vel realizar alguma venda
             updatePegg(sellBook, buyBook);
             Trade(buyBook, sellBook);
         }
@@ -446,7 +439,6 @@ int main()
         // Para alterar a ordem: Change identificador newPrice newQuantity
         if (type == "change")
         {
-            std::cin >> type;
             std::cin >> id;
             std::cin >> price >> qty;
             ChangeOrder(id, sellBook, buyBook, sideNew, price, qty);

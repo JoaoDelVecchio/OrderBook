@@ -22,6 +22,7 @@ public:
     std::string side;
     float price;
     float qty;
+    float id;
 };
 
 void AddToBuyBook(Order *ptr, std::vector<Order> &buyBook)
@@ -271,6 +272,7 @@ void MarketBuy(Order *ptr, std::vector<Order> &sellBook)
 
             quant += ptr->qty;
             sellBook[0].qty -= ptr->qty;
+            ptr->qty = 0;
 
             std::cout << "quant: " << quant << " sellBook[0].qty " << sellBook[0].qty << "\n";
             std::cout << "\n--------------------------------------------- \n";
@@ -340,12 +342,13 @@ void MarketSell(Order *ptr, std::vector<Order> &buyBook)
 
             quant += ptr->qty;
             buyBook[0].qty -= ptr->qty;
+            ptr->qty = 0;
 
             std::cout << "quant: " << quant << " buyBook[0].qty " << buyBook[0].qty << "\n";
             std::cout << "\n--------------------------------------------- \n";
             std::cout << "Trade, price: " << buyBook[0].price << ", qty: " << quant << "\n";
             std::cout << "\n--------------------------------------------- \n";
-            quant = 0; 
+            quant = 0;
             free(ptr);
         }
         else if (ptr->qty == buyBook[0].qty)
@@ -353,6 +356,7 @@ void MarketSell(Order *ptr, std::vector<Order> &buyBook)
             std::cout << "Ordem do topo do livro de vendar igual a ordem de compra a mercado \n";
 
             quant += ptr->qty;
+            ptr->qty = 0;
 
             std::cout << "\n--------------------------------------------- \n";
             std::cout << "Trade, price: " << buyBook[0].price << ", qty: " << quant << "\n";
@@ -365,21 +369,82 @@ void MarketSell(Order *ptr, std::vector<Order> &buyBook)
     }
 }
 
+void Livro(std::vector<Order> sellBook, std::vector<Order> buyBook)
+{
+    std::cout << "\n_________________________\n";
+    std::cout << "ORDENS DE COMPRA: \n";
+    for (int j = 0; j < buyBook.size(); j++)
+    {
+        std::cout << buyBook[j].qty << " @ "<< buyBook[j].price<< "\n";
+    }
+    std::cout << "_________________________\n";
+
+
+    std::cout << "\n_________________________\n";
+    std::cout << "ORDENS DE VENDA: \n";
+    for (int j = 0; j < sellBook.size(); j++)
+    {
+        std::cout << sellBook[j].qty << " @ "<< sellBook[j].price<< "\n";
+    }
+    std::cout << "_________________________\n";
+}
+
+void CancelOrder(float identificador, std::vector<Order> &sellBook, std::vector<Order> &buyBook)
+{
+    bool REMOVEU = FALSE;
+    int i, j;
+    // Procura no sellBook
+    for (i=0; i<sellBook.size() && !REMOVEU ; i++)
+    {
+        if (sellBook[i].id == identificador)
+        {
+            sellBook.erase(sellBook.begin() + i);
+            REMOVEU = TRUE;
+        }
+    }
+    // Procura no buyBook
+    for (i=0; i<buyBook.size() && !REMOVEU ; i++)
+    {
+        if (buyBook[i].id == identificador)
+        {
+            buyBook.erase(buyBook.begin() + i);
+            REMOVEU = TRUE;
+        }
+    }
+    // Avisa caso essa ordem nao exista
+    if (!REMOVEU)
+    {
+        std::cout << "Order don't exist.\n";
+    }
+    else
+    {
+        std::cout << "Ordem cancelled.\n";
+    }
+}
+
+
+
 int main()
 {
     // Declara��o de Vari�veis a serem utilizadas
     std::string type, side;
-    float price, qty;
+    float price, qty, identificador;
     Order *ptr;                           // ponteiro para um objeto da classe order
     std::vector<Order> buyBook, sellBook; //   Nossos livros de compra e venda
     /*---------------------------------------------------------------------*/
-
+    identificador = 1;
     std::cout << "Para encerrar o programa a qualquer momento, digite: exit \n";
+    std::cout << "Para visualizar o livro de ordens a qualquer momento, digite: ver livro \n";
     std::cout << "Matching Engine - Digite as entradas de compra ou venda: \n";
 
     std::cin >> type >> side; // Acabei de ler a primeira entrada
     while (type != "exit")
     {
+        if (type == "ver")
+        {
+            std::cout << "Entrei no bagulho do livro: \n";
+            Livro(sellBook, buyBook);
+        }
         //  Separar em dois casos: Ordem Limit ou Ordem Market
         if (type == "limit")
         {
@@ -388,21 +453,26 @@ int main()
             std::cout << type << " " << side << " " << price << " " << qty << "\n\n";
 
             //  Proximo passo sera criar um objeto da classe ordem e adicionar esses valores ao objeto
+            identificador += 1;
             ptr = new Order;
             ptr->type = type;
             ptr->side = side;
             ptr->price = price;
             ptr->qty = qty;
+            ptr->id = identificador;
 
             //  Agora vamos adicionar essa nova ordem ou no livro de compras ou no de vendas
             if (ptr->side == "buy")
             {
                 AddToBuyBook(ptr, buyBook);
+                std::cout << "Order Created: buy "<< ptr->qty<< " @ "<< ptr->price<< "  identificador: "<< ptr->id<< "\n";
             }
             else
             {
                 AddToSellBook(ptr, sellBook);
+                std::cout << "Order Created: sell "<< ptr->qty<< " @ "<< ptr->price<< "  identificador: "<< ptr->id<< "\n";
             }
+
 
             // Atualizar os livros para ver se � poss�vel realizar alguma venda
             std::cout << "Vamos tentar realizar um limit Trade \n";
@@ -450,10 +520,17 @@ int main()
                 std::cout << sellBook[j].price << " " << sellBook[j].qty << "\n";
             }
         }
+
+        if (type == "cancel")
+        {
+            std::cout << "Realizou um cancelamento de ordem \n";
+            std::cin >> qty; // nesse caso qty sera o ID da ordem.
+            std::cout << "Cancelar ordem "<< qty << "\n";
+            CancelOrder(qty ,sellBook, buyBook);
+        }
         /*--------------------------------------*/
         std::cout << "\n--------------------------------------------- \n";
         std::cin >> type >> side;
     }
-
     return 0;
 }

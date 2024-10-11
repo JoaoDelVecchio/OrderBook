@@ -24,7 +24,6 @@ public:
     float price;
     float qty;
     float id;
-    bool isPegg;
 };
 
 void AddToBuyBook(Order *ptr, std::vector<Order> &buyBook)
@@ -50,7 +49,7 @@ void AddToBuyBook(Order *ptr, std::vector<Order> &buyBook)
     {
         END = TRUE;
 
-        if (buyBook[i].price < buyBook[i + 1].price || (buyBook[i].price == buyBook[i + 1].price && buyBook[i].id > buyBook[i + 1].id))
+        if (buyBook[i].price <= buyBook[i + 1].price)
         {
             aux = buyBook[i];
             buyBook[i] = buyBook[i + 1];
@@ -82,7 +81,7 @@ void AddToSellBook(Order *ptr, std::vector<Order> &sellBook)
     while (END == FALSE && (i + 1) != sellBook.size())
     {
         END = TRUE;
-        if (sellBook[i].price > sellBook[i + 1].price || ( sellBook[i].price == sellBook[i + 1].price && sellBook[i].id > sellBook[i + 1].id) )
+        if (sellBook[i].price > sellBook[i + 1].price || sellBook[i].price == sellBook[i + 1].price)
         {
             aux = sellBook[i];
             sellBook[i] = sellBook[i + 1];
@@ -264,10 +263,10 @@ void Livro(std::vector<Order> sellBook, std::vector<Order> buyBook)
     std::cout << "_________________________\n";
 }
 
-bool CancelOrder(float identificador, std::vector<Order> &sellBook, std::vector<Order> &buyBook, std::string& sideNew, bool& isPegg)
+bool CancelOrder(float identificador, std::vector<Order> &sellBook, std::vector<Order> &buyBook, std::string& sideNew)
 {
     bool REMOVEU = FALSE;
-    int i;
+    int i, j;
     // Procura no sellBook
     for (i=0; i<sellBook.size() && !REMOVEU ; i++)
     {
@@ -276,7 +275,6 @@ bool CancelOrder(float identificador, std::vector<Order> &sellBook, std::vector<
             sellBook.erase(sellBook.begin() + i);
             REMOVEU = TRUE;
             sideNew = "sell";
-            isPegg = sellBook[i].isPegg;
         }
     }
     // Procura no buyBook
@@ -287,57 +285,13 @@ bool CancelOrder(float identificador, std::vector<Order> &sellBook, std::vector<
             buyBook.erase(buyBook.begin() + i);
             REMOVEU = TRUE;
             sideNew = "buy";
-            isPegg = buyBook[i].isPegg;
         }
     }
     // Avisa caso essa ordem nao exista
     return REMOVEU;
 }
 
-void ChangeOrder(float id, std::vector<Order> &sellBook, std::vector<Order> &buyBook, std::string& sideNew, float price, float qty)
-{
-    bool isPegg = FALSE;
-    Order *ptr;
 
-    CancelOrder(id, sellBook, buyBook, sideNew, isPegg);
-    ptr = new Order;
-    ptr->side = sideNew;
-    ptr->price = price;
-    ptr->qty = qty;
-    ptr->id = id;
-    ptr->isPegg = isPegg;
-
-    if (ptr->side == "buy")
-    {
-        AddToBuyBook(ptr, buyBook);
-    }
-    else
-    {
-        AddToSellBook(ptr, sellBook);
-    }
-}
-
-void updatePegg(std::vector<Order> &sellBook, std::vector<Order> &buyBook)
-{
-    int i;
-    std::string sideNew;
-    // Procura no sellBook
-    for (i=0; i<sellBook.size(); i++)
-    {
-        if (sellBook[i].isPegg == TRUE)
-        {
-            ChangeOrder(sellBook[i].id, sellBook, buyBook, sideNew , sellBook[0].price, sellBook[i].qty);
-        }
-    }
-    // Procura no buyBook
-    for (i=0; i<buyBook.size(); i++)
-    {
-        if (buyBook[i].isPegg == TRUE)
-        {
-            ChangeOrder(buyBook[i].id, sellBook, buyBook, sideNew , buyBook[0].price, buyBook[i].qty);
-        }
-    }
-}
 
 int main()
 {
@@ -346,40 +300,23 @@ int main()
     float price, qty, identificador, id;
     Order *ptr;                           // ponteiro para um objeto da classe order
     std::vector<Order> buyBook, sellBook; //   Nossos livros de compra e venda
-    bool REMOVEU, isPegg;
+    bool REMOVEU;
     /*---------------------------------------------------------------------*/
     identificador = 1;
     std::cout << "Para encerrar o programa a qualquer momento, digite: exit \n\n";
-    std::cout << "Para visualizar o livro de ordens a qualquer momento, digite: print book \n\n";
-    std::cout << "Digite help para visualizar possiveis comandos e certas diretrizes do programa. \n\n";
+    std::cout << "Para visualizar o livro de ordens a qualquer momento, digite: ver livro \n\n";
     std::cout << "Matching Engine - Digite algum comando ou as entradas de compra e venda: \n\n";
 
-    std::cin >> type; // Acabei de ler a primeira entrada
+    std::cin >> type >> side; // Acabei de ler a primeira entrada
     while (type != "exit")
     {
-        if (type == "help")
+        if (type == "ver")
         {
-            std::cout << "\n  1. Para encerrar o programa a qualquer momento, digite: exit \n\n";
-            std::cout << "  2. Para visualizar o livro de ordens a qualquer momento, digite: print book \n\n";
-            std::cout << "  3. Para alterar alguma ordem, digite: change Identificador new_Price new_Quantity \n\n";
-            std::cout << "  4. Para cancelar alguma ordem, digite: calcel Identificador \n\n";
-            std::cout << "  4. Para cancelar criar uma ordem pegged, digite 'peg bid buy Quantity' ou 'peg offer sell Quantity' \n\n";
-            std::cout << "  5. Este programa funciona de tal forma que sempre que ha uma ordem limit de venda com preco menor que uma ordem limit de compra ocorre um trade. \n\n";
-            std::cout << "  6. Este programa funciona de tal forma que a maior oferta de compra ou a menor oferta de venda sao sempre os valores bid e offer e serem seguidos \n\n";
-        }
-        if (type == "print") // print book
-        {
-            std::cin >> side;
             Livro(sellBook, buyBook);
         }
-
-        if (type == "limit") // limit side price qty OU limit bid buy price qty OU limit offer sell price qty
+        //  Separar em dois casos: Ordem Limit ou Ordem Market
+        if (type == "limit")
         {
-            std::cin >> side;
-            if (side == "bid" || side == "offer"){
-                std::cin >> side;
-            }
-
             std::cin >> price >> qty;
             //  Proximo passo sera criar um objeto da classe ordem e adicionar esses valores ao objeto
             identificador += 1;
@@ -389,7 +326,6 @@ int main()
             ptr->price = price;
             ptr->qty = qty;
             ptr->id = identificador;
-            ptr->isPegg = FALSE;
 
             //  Agora vamos adicionar essa nova ordem ou no livro de compras ou no de vendas
             if (ptr->side == "buy")
@@ -403,14 +339,13 @@ int main()
                 std::cout << "Order Created: sell "<< ptr->qty<< " @ "<< ptr->price<< "  identificador: "<< ptr->id<< "\n";
             }
 
-            // Atualizar os livros para ver se eh possivel realizar alguma venda
-            updatePegg(sellBook, buyBook);
+
+            // Atualizar os livros para ver se � poss�vel realizar alguma venda
             Trade(buyBook, sellBook);
         }
         /*--------------------------------------*/
         if (type == "market")
         {
-            std::cin >> side;
             std::cin >> qty;
             //  Proximo passo sera criar um objeto da classe ordem e adicionar esses valores ao objeto
             ptr = new Order;
@@ -427,12 +362,10 @@ int main()
                 MarketSell(ptr, buyBook);
             }
         }
-        /*--------------------------------------*/
-        if (type == "cancel") // cancel order identificador
+        if (type == "cancel")
         {
-            std::cin >> side; // vai receber a string order
             std::cin >> qty; // nesse caso qty sera o ID da ordem.
-            REMOVEU = CancelOrder(qty ,sellBook, buyBook, sideNew, isPegg);
+            REMOVEU = CancelOrder(qty ,sellBook, buyBook, sideNew);
             if (!REMOVEU)
             {
                 std::cout << "Order don't exist.\n";
@@ -442,57 +375,37 @@ int main()
                 std::cout << "Order cancelled.\n";
             }
         }
-        /*--------------------------------------*/
         // Para alterar a ordem: Change identificador newPrice newQuantity
-        if (type == "change")
+        if(type == "change")
         {
-            std::cin >> type;
-            std::cin >> id;
             std::cin >> price >> qty;
-            ChangeOrder(id, sellBook, buyBook, sideNew, price, qty);
-            updatePegg(sellBook, buyBook);
+            // primeiro vou cancelar a ordem com esse identificador
+            id = std::stof(side);
+            CancelOrder(id, sellBook, buyBook, sideNew);
+            // depois vou adicioanr essa newOrder no livro adequado
+            ptr = new Order;
+            ptr->side = sideNew;
+            ptr->price = price;
+            ptr->qty = qty;
+            ptr->id = id;
+
+            if (ptr->side == "buy")
+            {
+                AddToBuyBook(ptr, buyBook);
+            }
+            else
+            {
+                AddToSellBook(ptr, sellBook);
+            }
 
             Trade(buyBook, sellBook);
         }
-        /*--------------------------------------*/
-        if (type == "peg") // peg bid buy qty OU peg offer sell qty
-        {
-            std::cin >> side;
-            std::cin >> side;
-            std::cin >> qty;
 
-            if (side == "buy")
-            {
-                price = buyBook[0].price;
-                identificador += 1;
 
-                ptr = new Order;
-                ptr->side = side;
-                ptr->price = price;
-                ptr->qty = qty;
-                ptr->id = identificador;
-                ptr->isPegg = TRUE;
-                AddToBuyBook(ptr, buyBook);
-            }
-            if (side == "sell")
-            {
-                price = sellBook[0].price;
-                identificador += 1;
-
-                ptr = new Order;
-                ptr->side = side;
-                ptr->price = price;
-                ptr->qty = qty;
-                ptr->id = identificador;
-                ptr->isPegg = TRUE;
-                AddToSellBook(ptr, sellBook);
-            }
-        }
         /*--------------------------------------*/
         std::cout << "______________________________________________________________________________________________\n\n";
         std::cout << "Matching Engine - Type the next order: \n";
-        std::cin >> type;
+        std::cin >> type >> side;
     }
-
     return 0;
 }

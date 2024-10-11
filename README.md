@@ -1,9 +1,7 @@
 # OrderBook
 
-
 tarefas a fazer:
-
-* Implementar funcao para visualizacao do livro
+* Implementar funcao para visualizacao do livro - FEITO 
 * Implementar cancelamento:
                 limit buy 10 100
 
@@ -17,3 +15,6 @@ tarefas a fazer:
          peg bid buy 150
          limit bid buy 10.1 300
 * Tentar modularizar mais o código, limpar ele e verificar ordem temporal
+
+
+PROBLEMA: QUANDO ALTERO, ELE FICA EM CIMA E NÃO EM BAIXO. - SE FOR IGUAL COMPARA O IDENTIFICADOR        
