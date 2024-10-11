@@ -31,7 +31,7 @@ void AddToBuyBook(Order *ptr, std::vector<Order> &buyBook)
 {
 
     bool END;
-    int i, j;
+    int i;
     Order aux;
     int n = buyBook.size();
 
@@ -64,7 +64,7 @@ void AddToBuyBook(Order *ptr, std::vector<Order> &buyBook)
 void AddToSellBook(Order *ptr, std::vector<Order> &sellBook)
 {
     bool END;
-    int i, j;
+    int i;
     Order aux;
     int n = sellBook.size();
     /*---------------------------------------------------------------------------*/
